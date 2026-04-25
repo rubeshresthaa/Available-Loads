@@ -21,12 +21,30 @@ const options = {
       },
     ],
   },
-  apis: ['./src/routes/*.ts', './src/models/*.ts'], // Path to the API docs
+  // Expanded paths to match both development and compiled production files
+  apis: ['./src/routes/*.ts', './src/models/*.ts', './src/routes/*.js', './src/models/*.js'],
 };
 
 const specs = swaggerJsdoc(options);
 
 export const setupSwagger = (app: Application) => {
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+  // Use CDN for Swagger UI assets to fix the blank page issue on Vercel
+  const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.18.3/swagger-ui.min.css";
+  const JS_URLS = [
+    "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.18.3/swagger-ui-bundle.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.18.3/swagger-ui-standalone-preset.js"
+  ];
+
+  app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(specs, {
+      customCssUrl: CSS_URL,
+      customJs: JS_URLS,
+      explorer: true,
+      customSiteTitle: "Cargo Load API Documentation"
+    })
+  );
+  
   console.log('Swagger documentation available at /api-docs');
 };
